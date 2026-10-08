@@ -38,12 +38,44 @@ Base = declarative_base()
 
 
 def init_db() -> None:
-    """Initialize database tables."""
+    """Initialize database tables and ensure default demo users exist."""
     # Ensure directory exists for sqlite
     settings.ensure_directories()
     # Import all models to ensure they are registered with Base metadata
     import app.models  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    try:
+        from app.models.user import User
+        from app.core.security import hash_password
+
+        session = SessionLocal()
+        user_count = session.query(User).count()
+        if user_count == 0:
+            # Seed default admin and pharmacist if database is empty
+            admin_user = User(
+                username="admin",
+                email="admin@pharmacare.local",
+                password_hash=hash_password("Admin@123"),
+                full_name="Dr. Alok Verma (Admin)",
+                role="admin",
+                phone="+91 98111 22233",
+                is_active=True,
+            )
+            pharmacist_user = User(
+                username="pharmacist",
+                email="pharmacist@pharmacare.local",
+                password_hash=hash_password("Pharma@123"),
+                full_name="Neha Deshmukh (Pharmacist)",
+                role="pharmacist",
+                phone="+91 98222 33344",
+                is_active=True,
+            )
+            session.add_all([admin_user, pharmacist_user])
+            session.commit()
+        session.close()
+    except Exception as e:
+        print(f"Auto-seed check: {e}")
 
 
 @contextmanager
