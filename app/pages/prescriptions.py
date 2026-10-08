@@ -23,7 +23,7 @@ render_sidebar()
 
 current_user = get_current_user()
 
-st.markdown("## :material/prescriptions: Medical Prescriptions Registry")
+st.markdown("## Medical Prescriptions Registry")
 st.caption("Track doctor prescriptions, verify Medical Council registration numbers, and ensure Schedule H/X statutory dispensing compliance")
 
 all_prescriptions = PrescriptionService.list_prescriptions()
@@ -32,9 +32,9 @@ dispensed_rx_count = sum(1 for rx in all_prescriptions if rx["sales_count"] > 0)
 
 k1, k2 = st.columns(2)
 with k1:
-    render_metric_card("Registered Prescriptions", str(total_rx), "Statutory medical records", accent="teal", icon="📋")
+    render_metric_card("Registered Prescriptions", str(total_rx), "Statutory medical records", accent="navy")
 with k2:
-    render_metric_card("Dispensed Invoices Linked", str(dispensed_rx_count), "Counter sales with attached Rx", accent="blue", icon="💊")
+    render_metric_card("Dispensed Invoices Linked", str(dispensed_rx_count), "Counter sales with attached Rx", accent="teal")
 
 st.markdown("---")
 
@@ -78,12 +78,12 @@ else:
             with col1:
                 st.markdown(f"#### Patient: {rx_detail['patient_name']}")
                 st.caption(f"Age: **{rx_detail['patient_age'] or 'N/A'}** | Gender: **{rx_detail['patient_gender'] or 'N/A'}**")
-                st.write(f"🩺 Doctor: **{rx_detail['doctor_name']}**")
-                st.write(f"📜 Medical Council Reg: **`{rx_detail['doctor_reg_no'] or 'N/A'}`**")
+                st.write(f"Doctor: **{rx_detail['doctor_name']}**")
+                st.write(f"Medical Council Reg: **`{rx_detail['doctor_reg_no'] or 'N/A'}`**")
             with col2:
-                st.write(f"📅 Date: **{rx_detail['prescription_date']}**")
-                st.write(f"🔍 Clinical Diagnosis: **{rx_detail['diagnosis'] or 'None recorded'}**")
-                st.write(f"📝 Doctor's Dosage Notes: **{rx_detail['notes'] or 'None recorded'}**")
+                st.write(f"Date: **{rx_detail['prescription_date']}**")
+                st.write(f"Clinical Diagnosis: **{rx_detail['diagnosis'] or 'None recorded'}**")
+                st.write(f"Doctor's Dosage Notes: **{rx_detail['notes'] or 'None recorded'}**")
 
             st.markdown("##### Sales Billed Under This Prescription:")
             if not rx_detail["sales"]:

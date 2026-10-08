@@ -170,42 +170,17 @@ def main() -> None:
     # User is authenticated: construct role-aware navigation
     admin_mode = is_admin()
 
-    # Core Navigation Structure
-    pages_structure = {
-        "Overview": [
-            st.Page("pages/dashboard.py", title="Dashboard", icon=":material/dashboard:", default=True),
-        ],
-        "Inventory & Batches": [
-            st.Page("pages/medicines.py", title="Medicines Catalog", icon=":material/medication:"),
-            st.Page("pages/expiry_monitor.py", title="Expiry Monitor", icon=":material/event_busy:"),
-            st.Page("pages/low_stock.py", title="Low Stock Alerts", icon=":material/warning:"),
-        ],
-        "Point of Sale": [
-            st.Page("pages/billing.py", title="Billing Counter", icon=":material/point_of_sale:"),
-            st.Page("pages/sales_history.py", title="Sales Invoices", icon=":material/receipt_long:"),
-            st.Page("pages/prescriptions.py", title="Prescriptions", icon=":material/prescriptions:"),
-        ],
-        "Procurement": [
-            st.Page("pages/purchases.py", title="Stock Purchases", icon=":material/inventory_2:"),
-            st.Page("pages/suppliers.py", title="Suppliers", icon=":material/local_shipping:"),
-        ],
-        "Directory & CRM": [
-            st.Page("pages/customers.py", title="Customers & Patients", icon=":material/group:"),
-        ],
-        "Analytics & Alerts": [
-            st.Page("pages/reports.py", title="Reports & Export", icon=":material/analytics:"),
-            st.Page("pages/notifications.py", title="Notifications", icon=":material/notifications:"),
-        ],
-    }
+    # Primary 6-Section Navigation Structure
+    pages = [
+        st.Page("pages/dashboard.py", title="Dashboard", icon=":material/dashboard:", default=True),
+        st.Page("pages/billing.py", title="Billing / POS", icon=":material/point_of_sale:"),
+        st.Page("pages/medicines.py", title="Medicines & Inventory", icon=":material/medication:"),
+        st.Page("pages/purchases.py", title="Stock Inward", icon=":material/inventory_2:"),
+        st.Page("pages/prescriptions.py", title="Prescriptions", icon=":material/prescriptions:"),
+        st.Page("pages/reports.py", title="Reports & Settings", icon=":material/analytics:"),
+    ]
 
-    # Restrict Admin modules only to administrators
-    if admin_mode:
-        pages_structure["Administration"] = [
-            st.Page("pages/audit_logs.py", title="Audit Logs", icon=":material/security:"),
-            st.Page("pages/admin.py", title="System Administration", icon=":material/admin_panel_settings:"),
-        ]
-
-    nav = st.navigation(pages_structure)
+    nav = st.navigation(pages)
     nav.run()
 
 

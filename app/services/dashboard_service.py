@@ -130,11 +130,13 @@ class DashboardService:
             }
 
     @staticmethod
-    def get_sales_timeline(days: int = 30) -> List[Dict[str, Any]]:
+    def get_sales_timeline(days: int = 30, max_limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """
-        Fetch daily sales aggregate for the last N days.
+        Fetch daily sales aggregate for N days.
         Guarantees contiguous date records even if sales on a given day are zero.
         """
+        if max_limit is not None and max_limit > 0 and days > max_limit:
+            days = max_limit
         today = date.today()
         start_date = today - timedelta(days=days - 1)
         start_datetime = datetime.combine(start_date, datetime.min.time())
@@ -176,6 +178,8 @@ class DashboardService:
                     }
                 )
 
+            if max_limit is not None and max_limit > 0:
+                return timeline[-max_limit:]
             return timeline
 
     @staticmethod

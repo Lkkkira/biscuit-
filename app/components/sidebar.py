@@ -9,22 +9,21 @@ from app.services.auth_service import AuthService
 
 
 def render_sidebar(unread_notifications_count: int = 0) -> None:
-    """Render branded hospital sidebar with user profile and session controls."""
+    """Render branded clinical sidebar with user profile and session controls."""
     user = get_current_user()
     if not user:
         return
 
     with st.sidebar:
         # Branding Header
-        logo_path = Path(settings.LOGO_PATH)
-        if logo_path.exists():
-            st.image(str(logo_path), width=48)
-
         st.markdown(
             """
             <div style="margin-bottom: 1.25rem; padding: 0.25rem 0;">
-                <h3 style="color: #1C1917; margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em;">💊 PharmaCare</h3>
-                <span style="color: #78716C; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;">Smart Pharmacy Management</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                    <span style="font-size: 1.25rem; color: #0F766E; font-weight: 800;">✚</span>
+                    <h3 style="color: #1C1917; margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em;">PharmaCare</h3>
+                </div>
+                <span style="color: #78716C; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">Clinical Pharmacy System</span>
             </div>
             """,
             unsafe_allow_html=True,
@@ -37,7 +36,7 @@ def render_sidebar(unread_notifications_count: int = 0) -> None:
         profile_html = f"""
         <div class="user-profile-chip">
             <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0F766E 0%, #115E59 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);">
+                <div style="width: 34px; height: 34px; border-radius: 6px; background: #0F766E; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">
                     {user.get("username", "U")[:1].upper()}
                 </div>
                 <div>
@@ -45,7 +44,7 @@ def render_sidebar(unread_notifications_count: int = 0) -> None:
                     <div class="user-profile-email">{user.get("email", "")}</div>
                 </div>
             </div>
-            <div style="margin-top: 0.5rem;">
+            <div style="margin-top: 0.4rem;">
                 {role_badge}
             </div>
         </div>

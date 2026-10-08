@@ -37,13 +37,18 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 
-def init_db() -> None:
+import os
+
+def init_db(auto_seed: bool = True) -> None:
     """Initialize database tables and ensure default demo users exist."""
     # Ensure directory exists for sqlite
     settings.ensure_directories()
     # Import all models to ensure they are registered with Base metadata
     import app.models  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    if not auto_seed or "test_" in settings.DATABASE_URL:
+        return
 
     try:
         from app.models.user import User

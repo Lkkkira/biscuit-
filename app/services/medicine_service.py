@@ -337,3 +337,119 @@ class MedicineService:
             module="MEDICINE",
             description=action_desc,
         )
+
+    @staticmethod
+    def import_csv_inventory(current_user: Dict[str, Any], rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Bulk import medicines and batches from parsed CSV data rows.
+        Validates categories, creates missing categories/medicines/batches,
+        updates existing stock if batch matches, and logs audit events.
+        """
+        from datetime import timedelta
+        imported_meds = 0
+        imported_batches = 0
+        updated_batches = 0
+
+        with get_db() as session:
+            categories = session.scalars(select(Category)).all()
+            cat_map = {c.name.strip().lower(): c for c in categories}
+
+            for row in rows:
+                cat_name = (str(row.get("category") or "General")).strip()
+                cat_key = cat_name.lower()
+                if cat_key not in cat_map:
+                    new_cat = Category(name=cat_name, description="Imported via CSV")
+                    session.add(new_cat)
+                    session.flush()
+                    cat_map[cat_key] = new_cat
+
+                target_cat = cat_map[cat_key]
+
+                med_name = str(row.get("name") or "").strip()
+                if not med_name:
+                    continue
+
+                generic_name = str(row.get("generic_name") or med_name).strip()
+                strength = str(row.get("strength") or "500mg").strip()
+                dosage_form = str(row.get("dosage_form") or "Tablet").strip()
+                selling_price = float(row.get("selling_price") or 0.0)
+                min_stock = int(row.get("min_stock") or 15)
+                barcode = str(row.get("barcode") or "").strip() or None
+                rx_req = bool(row.get("prescription_required") or False)
+
+                med = session.scalars(
+                    select(Medicine).where(
+                        (func.lower(Medicine.name) == med_name.lower())
+                        & (func.lower(Medicine.strength) == strength.lower())
+                    )
+                ).first()
+
+                if not med:
+                    med = Medicine(
+                        name=med_name,
+                        generic_name=generic_name,
+                        category_id=target_cat.id,
+                        dosage_form=dosage_form,
+                        strength=strength,
+                        selling_price=selling_price,
+                        min_stock=min_stock,
+                        barcode=barcode,
+                        prescription_required=rx_req,
+                        status="active",
+                    )
+                    session.add(med)
+                    session.flush()
+                    imported_meds += 1
+
+                batch_no = str(row.get("batch_no") or "").strip().upper()
+                if batch_no:
+                    exp_date_raw = row.get("expiry_date")
+                    if isinstance(exp_date_raw, str):
+                        try:
+                            exp_date = date.fromisoformat(exp_date_raw)
+                        except Exception:
+                            exp_date = date.today() + timedelta(days=365)
+                    elif isinstance(exp_date_raw, date):
+                        exp_date = exp_date_raw
+                    else:
+                        exp_date = date.today() + timedelta(days=365)
+
+                    quantity = int(row.get("quantity") or 0)
+                    purchase_price = float(row.get("purchase_price") or (selling_price * 0.65))
+
+                    existing_batch = session.scalars(
+                        select(MedicineBatch).where(
+                            (MedicineBatch.medicine_id == med.id)
+                            & (func.lower(MedicineBatch.batch_no) == batch_no.lower())
+                        )
+                    ).first()
+
+                    if existing_batch:
+                        existing_batch.quantity += quantity
+                        existing_batch.purchase_price = purchase_price
+                        existing_batch.expiry_date = exp_date
+                        updated_batches += 1
+                    else:
+                        new_batch = MedicineBatch(
+                            medicine_id=med.id,
+                            batch_no=batch_no,
+                            expiry_date=exp_date,
+                            quantity=quantity,
+                            purchase_price=purchase_price,
+                        )
+                        session.add(new_batch)
+                        imported_batches += 1
+
+        AuditService.log_action(
+            user_id=current_user.get("id"),
+            username=current_user.get("username", "system"),
+            action="CREATE",
+            module="INVENTORY",
+            description=f"CSV Bulk Import: {imported_meds} medicines, {imported_batches} new batches, {updated_batches} updated batches",
+        )
+
+        return {
+            "imported_medicines": imported_meds,
+            "imported_batches": imported_batches,
+            "updated_batches": updated_batches,
+        }

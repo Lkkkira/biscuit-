@@ -96,7 +96,7 @@ PharmaCare/
 │   ├── components/       # Custom hospital CSS, metric cards, sidebar, status badges
 │   ├── core/             # Configuration, SQLite database engine, security (bcrypt), exceptions
 │   ├── models/           # 14 SQLAlchemy 2.x declarative entity models
-│   ├── pages/            # 14 Streamlit multipage views (Dashboard, Billing, Inventory, Admin)
+│   ├── pages/            # 6 Streamlit primary sections (Dashboard, Billing/POS, Medicines & Inventory, Stock Inward, Prescriptions, Reports & Settings)
 │   ├── services/         # 13 Domain business services (Pure Python business logic)
 │   ├── utils/            # ReportLab PDF invoice generator, validators, formatters, session
 │   └── main.py           # Application entrypoint and st.navigation routing

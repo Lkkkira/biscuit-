@@ -38,35 +38,40 @@ def setup_test_database():
 
     # Seed baseline Admin and Pharmacist
     with SessionLocal() as session:
-        admin_user = User(
-            username="admin_test",
-            email="admin_test@pharmacare.local",
-            password_hash=hash_password("Admin@123"),
-            full_name="Dr. Test Admin",
-            role="admin",
-            phone="+91 98765 00001",
-            is_active=True,
-        )
-        pharma_user = User(
-            username="pharma_test",
-            email="pharma_test@pharmacare.local",
-            password_hash=hash_password("Pharma@123"),
-            full_name="Test Pharmacist",
-            role="pharmacist",
-            phone="+91 98765 00002",
-            is_active=True,
-        )
-        session.add_all([admin_user, pharma_user])
+        if not session.query(User).filter_by(username="admin_test").first():
+            admin_user = User(
+                username="admin_test",
+                email="admin_test@pharmacare.local",
+                password_hash=hash_password("Admin@123"),
+                full_name="Dr. Test Admin",
+                role="admin",
+                phone="+91 98765 00001",
+                is_active=True,
+            )
+            pharma_user = User(
+                username="pharma_test",
+                email="pharma_test@pharmacare.local",
+                password_hash=hash_password("Pharma@123"),
+                full_name="Test Pharmacist",
+                role="pharmacist",
+                phone="+91 98765 00002",
+                is_active=True,
+            )
+            session.add_all([admin_user, pharma_user])
 
         # Baseline Categories
-        cat1 = Category(name="Analgesics & Antipyretics", description="Pain and fever relief")
-        cat2 = Category(name="Antibiotics", description="Antibacterial medications")
-        cat3 = Category(name="Antihistamines", description="Allergy management")
-        session.add_all([cat1, cat2, cat3])
+        for cname, cdesc in [
+            ("Analgesics & Antipyretics", "Pain and fever relief"),
+            ("Antibiotics", "Antibacterial medications"),
+            ("Antihistamines", "Allergy management"),
+        ]:
+            if not session.query(Category).filter_by(name=cname).first():
+                session.add(Category(name=cname, description=cdesc))
 
         # Baseline Settings
         for k, v in DEFAULT_SETTINGS.items():
-            session.add(AppSetting(key=k, value=v, description=f"Default {k}"))
+            if not session.query(AppSetting).filter_by(key=k).first():
+                session.add(AppSetting(key=k, value=v, description=f"Default {k}"))
 
         session.commit()
 

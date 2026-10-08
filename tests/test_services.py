@@ -513,7 +513,7 @@ def test_dashboard_kpis_and_timeline():
     assert kpis["total_medicines"] >= 2
     assert "today_revenue" in kpis
 
-    timeline = DashboardService.get_sales_timeline(days=7)
+    timeline = DashboardService.get_sales_timeline(days=7, max_limit=7)
     assert len(timeline) == 7
 
 
