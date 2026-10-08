@@ -35,10 +35,11 @@ from app.models import (
 )
 
 
-def seed_database() -> None:
+def seed_database(skip_init: bool = False) -> None:
     """Populate database with clean, comprehensive demo data."""
-    print("🚀 Initializing database schema...")
-    init_db()
+    if not skip_init:
+        print("🚀 Initializing database schema...")
+        init_db()
 
     session = SessionLocal()
     try:

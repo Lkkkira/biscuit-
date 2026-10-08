@@ -47,33 +47,16 @@ def init_db() -> None:
 
     try:
         from app.models.user import User
-        from app.core.security import hash_password
+        from app.models.medicine import Medicine
 
         session = SessionLocal()
         user_count = session.query(User).count()
-        if user_count == 0:
-            # Seed default admin and pharmacist if database is empty
-            admin_user = User(
-                username="admin",
-                email="admin@pharmacare.local",
-                password_hash=hash_password("Admin@123"),
-                full_name="Dr. Alok Verma (Admin)",
-                role="admin",
-                phone="+91 98111 22233",
-                is_active=True,
-            )
-            pharmacist_user = User(
-                username="pharmacist",
-                email="pharmacist@pharmacare.local",
-                password_hash=hash_password("Pharma@123"),
-                full_name="Neha Deshmukh (Pharmacist)",
-                role="pharmacist",
-                phone="+91 98222 33344",
-                is_active=True,
-            )
-            session.add_all([admin_user, pharmacist_user])
-            session.commit()
+        med_count = session.query(Medicine).count()
         session.close()
+
+        if user_count == 0 or med_count == 0:
+            from scripts.seed import seed_database
+            seed_database(skip_init=True)
     except Exception as e:
         print(f"Auto-seed check: {e}")
 
